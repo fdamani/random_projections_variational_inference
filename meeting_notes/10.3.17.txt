@@ -1,0 +1,53 @@
+Summary of meeting
+
+1. The Ermon papers reduce the problem of computing a log partition
+function from #P (counting) to NP (maximizing) by introducing a set of
+parity constraints in order to count over a small set of things and
+optimize over a (smaller) exponentially large set of things. This
+might provide a practical solution for many problems, but it does not
+provide theoretical guarantees. The general strategy is to balance
+counting and maximizing such that we minimize the error of our
+approximation.
+
+2. In the continuous space, the analogue to a parity constraint that
+creates the "thinning" effect might be a locality sensitive hash
+(LSH). A LSH hashes points such that the probability of collision is
+much higher for points that are close to each other in the high-
+dimensional space. Each bucket corresponds to a "convex body" whose
+volume can be estimated with our optimization oracle (numerical
+quadrature) provided that our function is smooth. In this setting, we
+have reduced our problem to counting a small number of  discrete
+objects, (e.g. the set of convex bodies), and an inner-loop
+optimization over larger volumes within each convex body.
+
+3. The general approach here of "divide and conquer" might be the right
+intuition. Lets divide our problem into a  set of small, discrete
+things that we can count and optimize over each set. We know how to
+solve our subproblem of estimating the volume of a convex body with
+our oracle, but how do we divide up our problem?
+
+4. One approach might be to generate a large set of constraints via LSH
+(say 100), which corresponds to a set of 100 hyperplanes slicing our
+large density. We then estimate the volume of each of these convex
+bodies.
+
+	A. One advantage of this approach is that there is a lot of structure
+	to our design space. We can specify each convex body with a bit
+	address (corresponding to what side you are on of each
+	hyperplane), which would even make the hamming distance a
+	meaningful measure here.
+
+	B. However, we might be skeptical of this approach because volume
+	estimation of convex bodies seems to be independent of p(x), which
+	doesn't make much sense. Another issue is that the set of convex
+	bodies will have  weird concentration properties - a tiny fraction
+	of convex bodies might have nonzero mass and  this same issue
+	might be apply to each convex body/polyhedra as well (e.g. all
+	mass might be near an edge)/
+
+5. An alternative approach might be to generate a set of LSH
+constraints sequentially. For each constraint, we measure the ratio of
+volumes on each side of the hyperplane (using a Monte Carlo estimator
+like annealed importance sampling or quasi-monte carlo). Proceed in an
+iterative fashion estimating ratios and then use a linear system of
+equations to measure total volume given the ratios.
